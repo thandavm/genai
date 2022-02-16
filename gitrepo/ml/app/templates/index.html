@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+    <title>Titanic Application</title>
+    <head> </head>
+    <body>
+        <form method="post" action = "/predict">
+            <input type = "text" name = "age" placeholder = "Age">
+            <input type = "text" name = "sex" placeholder="Sex">
+            <input type = "text" name = "cabin" placeholder = "Cabin">
+            <input type="submit" name="submit" value="Predict">
+        </form>
+        {{ prediction_text }}
+
+    </body>
+</html>
