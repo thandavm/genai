@@ -4,6 +4,7 @@ from cohere_sagemaker import Client
 import yaml
 import boto3
 import json
+from utils import helper
 
 # Setting page title and header
 st.set_page_config(page_title="Search Engine", page_icon=":robot_face:")
@@ -12,19 +13,16 @@ st.markdown(""" <style>
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 </style> """, unsafe_allow_html=True)
-
-# Set org ID and API key
-with open('/Users/thandavm/work/strategic_accounts/ai_summit/gen_ai_app/creds.yml', 'r') as file:
-    config = yaml.safe_load(file)
     
-access_key = config['aws']['access_key']
-secret_key = config['aws']['secret_token']
-region = config['aws']['region']
-aws_waf_index = config['aws_keys']['aws_waf']
-legal_index = config['aws_keys']['legal']
+aws_waf_index = helper.get_knowledge_index('aws_waf')
+aws_waf_index = helper.get_knowledge_index('legal')
 
-cohere_endpoint = config['endpoints']['cohere']
-flant5_endpoint = config['endpoints']['flant5']
+cohere_endpoint = helper.get_endpoint('cohere')
+flant5_endpoint = helper.get_endpoint('flant5')
+
+sagemaker_runtime_client = helper.get_sagemaker_runtime_client()
+kendra_client = helper.get_kendra_client()
+
 
 # Initialise session state variables
 if 'generated' not in st.session_state:
@@ -36,15 +34,6 @@ if 'knowledge_base' not in st.session_state:
 if 'model_name' not in st.session_state:
     st.session_state['model_name'] = []
 
-sagemaker_runtime_client = boto3.client('runtime.sagemaker',
-                                aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key,
-                                region_name=region)
-
-kendra_client = boto3.client('kendra',
-                                aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key,
-                                region_name=region)
 
 def query_endpoint_with_json_payload(encoded_json, endpoint_name, content_type='application/json'):
     client = boto3.client('runtime.sagemaker')
@@ -127,7 +116,7 @@ with container:
                 context = get_kendra_results(query, legal_index)
             
             if model_name == 'cohere-medium':
-                qa_prompt = f'Context: {context}\nQuestion: {query}\nAnswer:'
+                qa_prompt = f'prompt: {context}\nQuestion: {query}\nAnswer:'
                 co = Client(endpoint_name='cohere-medium')
                 response = co.generate(prompt=qa_prompt, max_tokens=tokens, temperature=temperature)
                 output = response.generations[0].text

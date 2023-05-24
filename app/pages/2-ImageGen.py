@@ -1,29 +1,12 @@
 import streamlit as st
 import json
 import boto3
-import yaml
 import numpy as np
 from matplotlib import pyplot as plt
+from utils import helper
 
-with open('/Users/thandavm/work/strategic_accounts/ai_summit/gen_ai_app/creds.yml', 'r') as file:
-    config = yaml.safe_load(file)
-    
-access_key = config['aws']['access_key']
-secret_key = config['aws']['secret_token']
-region = config['aws']['region']
-
-sd_endpoint = config['endpoints']['stable_diffuse_fintune'] 
-#sd_endpoint = 'jumpstart-ftc-stable-diffuse-verc'
-
-sagemaker_runtime_client = boto3.client('runtime.sagemaker',
-                                aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key,
-                                region_name=region)
-
-sagemaker_client = boto3.client('sagemaker',
-                                aws_access_key_id=access_key,
-                                aws_secret_access_key=secret_key,
-                                region_name=region)
+sagemaker_runtime_client = helper.get_sagemaker_runtime_client()
+sd_endpoint = helper.get_endpoint('stable_diffuse_fintune')
 
 st.subheader('Test your fine tuned LLM - Text to Image')
 
